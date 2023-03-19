@@ -8,6 +8,7 @@
         let getClientID = null;
         let clientInputSearch = null;
         let searchClient = {};
+        let state = false;
 
         function createPage() {
             const container = document.createElement('div');
@@ -112,6 +113,7 @@
 
         let createApp = createPage();
 
+
         function displayDate(string) {
             string.replaceAll("T", " ").slice(0, -14);
             return string[8] + string[9] + '.' + string[5] + string[6] + '.' + string[0] + string[1] + string[2] + string[3];
@@ -151,6 +153,19 @@
                 addClient();
                 func();
             }
+        }
+
+        function validTextInput(input) {
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(/[^А-Яа-яЁё -]/g, '');
+            });
+    
+            input.addEventListener('blur', () => {
+                let validate = input.value.trim().replace(/\-{2,}/g, '-').replace(/^-+|-$/g, '');
+                if(input.value !== '') {
+                    input.value = validate[0].toUpperCase() + validate.slice(1).replace(/\s{2,}/g, ' ');
+                }
+            });
         }
 
         function textValidate(text, form, button) {
@@ -348,6 +363,10 @@
             placeholderLastName.append(inputLastName);
             placeholderLastName.append(placeholderLastNameText);
             addContactContainer.append(addContact);
+
+            validTextInput(inputSurname);
+            validTextInput(inputName);
+            validTextInput(inputLastName);
 
             addContact.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -710,34 +729,40 @@
                 setTimeout(enterText, 300);
             }
         }
-
+ 
         function sortClients(prop) {
-            return (a, b) => a[prop] > b[prop] ? 1 : -1;
+            clientList = clientList.sort((a,b) => {
+                let sort = a[prop] < b[prop];
+                if(state == false) sort = a[prop] > b[prop];
+                if(sort) return -1;
+            });
+            renderingTable(clientList);
         }
 
         searchClientInput();
 
         createApp.tableID.addEventListener('click', () => {
-            clientList.reverse(sortClients("id"));
+            sortClients('id');
+            state = !state;
             createApp.tableID.classList.toggle('reverse-ID');
-            renderingTable(clientList);
         });
         
         createApp.tableAbbrName.addEventListener('click', () => {
-            clientList.sort(sortClients("surname"));
+            sortClients('surname');
+            state = !state;
             createApp.tableAbbrName.classList.toggle('reverse-abbr');
-            renderingTable(clientList);
         });
 
         createApp.tableDateCreate.addEventListener('click', () => {
-            clientList.reverse(sortClients("createdAt"));
+            sortClients('createdAt');
+            state = !state;
             createApp.tableDateCreate.classList.toggle('reverse-create');
-            renderingTable(clientList);
         });
+
         createApp.tableDateChanges.addEventListener('click', () => {
-            clientList.reverse(sortClients("updatedAt"));
+            sortClients('updatedAt');
+            state = !state;
             createApp.tableDateChanges.classList.toggle('reverse-update');
-            renderingTable(clientList);
         });
 
         function createModalWindow() { 
@@ -812,5 +837,6 @@
         }
 
     });
+    
 
 })();
