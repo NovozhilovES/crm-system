@@ -1,7 +1,7 @@
 (() => {
     document.addEventListener('DOMContentLoaded', () => {
 
-        let countNumber = 0;
+        let countNumber = null;
         let client = {};
         let contact = [];
         let clientList = null;
@@ -131,12 +131,9 @@
             for (const value of searchInputContact.values()) {
                 inputContactValue = value;
             }
-            if(errorBorder){
-                errorBorder.classList.remove('error-border');
-            }
-            if(errorInput){
-                errorInput.classList.remove('error-input');
-            }
+            if(errorBorder) errorBorder.classList.remove('error-border'); 
+            if(errorInput) errorInput.classList.remove('error-input');
+
             if(inputSurname.value == '') {
                 textValidate('Укажите фамилию!', searchForm, searchBtnSave);
                 inputSurname.classList.add('error-border');
@@ -145,11 +142,17 @@
                 textValidate('Укажите имя!', searchForm, searchBtnSave);
                 inputName.classList.add('error-border');
             }
-            else if(inputContactValue.value == '') {
-                textValidate('Заполните все контакты!', searchForm, searchBtnSave);
-                inputContactValue.classList.add('error-input');
+            else if(inputContactValue !== null) {
+                if(inputContactValue.value == '') {
+                    textValidate('Заполните все контакты!', searchForm, searchBtnSave);
+                    inputContactValue.classList.add('error-input');
+                }
+                else {
+                    addClient();
+                    func();
+                }
             }
-            else if(inputName !== '' && inputSurname !== '') {
+            else if(inputName !== '' && inputSurname !== '' ) {
                 addClient();
                 func();
             }
@@ -370,17 +373,11 @@
 
             addContact.addEventListener('click', (e) => {
                 e.preventDefault();
-                countNumber++;
-                if(countNumber <= 10) {
-                    let addContactModule = addContactList();
-                    addContactModule.btnDelete.dataset.listNumber = countNumber;
-                    addContactModule.inputContact.dataset.type = "Телефон";
-                    maskInputInstall("Телефон");
-                    addContactContainer.classList.add('resize');
-                } else {
-                    addContact.setAttribute('disabled', true);
-                    countNumber = 0;
-                }
+                const addContactModule = addContactList();
+                counterNumber(addContact);
+                addContactModule.inputContact.dataset.type = "Телефон";
+                maskInputInstall("Телефон");
+                addContactContainer.classList.add('resize');
             });
             
             return {
@@ -399,6 +396,19 @@
             };
         }
 
+        function counterNumber(btn) {
+            const btnDeleteItem = document.querySelectorAll('.delete-item-contact');
+            countNumber = 1;
+            btnDeleteItem.forEach(items => {
+                items.dataset.listNumber = countNumber++;
+                if(countNumber == 11) {
+                    btn.classList.add('btn-add-disable');
+                }
+                else if(countNumber <= 10) {
+                    btn.classList.remove('btn-add-disable');
+                }
+            });
+        }
         
         function customPlaceholder(value, prop) {
             const searchInput = document.querySelector(`.${value}`);
@@ -570,10 +580,11 @@
             btnDelete.addEventListener('click', (e) => {
                 e.preventDefault();
                 let deleteList = e.target.closest(".contact-item");
+                const addContact = document.querySelector('.btn-add-contact');
                 deleteList.replaceChildren();
                 deleteList.remove();
-                countNumber--;
-                if(countNumber == 0) {
+                counterNumber(addContact);
+                if(countNumber == 1) {
                     contactContainer.classList.remove('resize');
                 }
             });
